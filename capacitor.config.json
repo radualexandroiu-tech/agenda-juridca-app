@@ -1,0 +1,8 @@
+{
+  "appId": "com.agenda.juridica",
+  "appName": "Agenda Juridica",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true
+  }
+}

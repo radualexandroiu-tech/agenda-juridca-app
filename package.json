@@ -1,0 +1,9 @@
+{
+  "name": "agenda-juridica",
+  "version": "1.0.0",
+  "description": "Agenda Juridica App",
+  "dependencies": {
+    "@capacitor/android": "^5.0.0",
+    "@capacitor/core": "^5.0.0"
+  }
+}

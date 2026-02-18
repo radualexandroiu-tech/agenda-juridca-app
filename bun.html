@@ -1,0 +1,2481 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Agenda Juridică">
+    <meta name="theme-color" content="#2a5298">
+    <title>Agenda Juridică</title>
+    
+    <!-- Manifest pentru instalare ca PWA -->
+    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Agenda%20Juridic%C4%83%22%2C%22short_name%22%3A%22Agenda%22%2C%22description%22%3A%22Gestionare%20dosare%20%C8%99i%20termene%20juridice%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%232a5298%22%2C%22theme_color%22%3A%22%232a5298%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%2520viewBox%3D%270%25200%2520100%2520100%27%253E%253Ctext%2520y%3D%27.9em%27%2520font-size%3D%2790%27%253E%25E2%259A%2596%25EF%25B8%258F%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+    
+    <!-- Icon pentru iOS -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232a5298'/%3E%3Ctext y='.9em' font-size='90' text-anchor='middle' x='50' fill='white'%3E⚖️%3C/text%3E%3C/svg%3E">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .install-banner {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: #155724;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            display: none;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .install-banner button {
+            margin-top: 8px;
+            padding: 10px 20px;
+            background: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 700;
+            color: #155724;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .app-container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 12px;
+        }
+
+        .sync-status {
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            font-size: 11px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f7fa;
+            border-bottom: 2px solid #e1e8ed;
+            overflow-x: auto;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .tab {
+            flex: 1;
+            min-width: 90px;
+            padding: 16px 10px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #5a6c7d;
+            transition: all 0.3s;
+            border: none;
+            background: none;
+            font-size: 13px;
+            white-space: nowrap;
+            line-height: 1.5;
+        }
+
+        .tab.active {
+            background: white;
+            color: #2a5298;
+            border-bottom: 3px solid #2a5298;
+        }
+
+        .tab:hover {
+            background: rgba(42, 82, 152, 0.05);
+        }
+
+        .content {
+            padding: 15px;
+            padding-bottom: 80px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 13px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-group small {
+            color: #5a6c7d;
+            font-size: 11px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #2a5298;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .dosare-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .dosar-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .dosar-numar {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2a5298;
+            margin-bottom: 8px;
+        }
+
+        .dosar-info {
+            font-size: 12px;
+            color: #5a6c7d;
+            margin-bottom: 6px;
+            word-wrap: break-word;
+        }
+
+        .dosar-info strong {
+            color: #2d3748;
+        }
+
+        .dosar-info a {
+            color: #2a5298;
+            text-decoration: underline;
+            word-break: break-all;
+        }
+
+        .dosar-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .termen-item {
+            background: #fff;
+            border-left: 6px solid #e91e63;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .termen-urgent {
+            border-left-color: #e91e63;
+            background: #fff;
+        }
+
+        .termen-data {
+            font-weight: 700;
+            color: #e91e63;
+            font-size: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .termen-urgent .termen-data {
+            color: #e91e63;
+            font-size: 19px;
+        }
+
+        .termen-detalii {
+            font-size: 15px;
+            color: #2d3748;
+            line-height: 1.8;
+        }
+
+        .badge-zile {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: #e91e63;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .badge-civil { background: #e6f7ff; color: #0066cc; }
+        .badge-penal { background: #ffe6e6; color: #cc0000; }
+        .badge-contencios { background: #fff4e6; color: #cc7a00; }
+        .badge-comercial { background: #e6ffe6; color: #00a65a; }
+
+        .priority-urgent {
+            border-left: 4px solid #dc3545;
+            background: #fff5f5;
+        }
+
+        .priority-foarte-urgent {
+            border-left: 4px solid #8b0000;
+            background: #ffe0e0;
+        }
+
+        .priority-urmarit {
+            border-left: 4px solid #ffc107;
+            background: #fff9e6;
+        }
+
+        .priority-badge-urgent {
+            background: #dc3545;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .priority-badge-foarte-urgent {
+            background: #8b0000;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            animation: pulse-red 1.5s infinite;
+        }
+
+        .priority-badge-urmarit {
+            background: #ffc107;
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .todo-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .todo-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #a8b8f0 0%, #c5b3d9 100%);
+            color: white;
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+        }
+
+        .stat-card:nth-child(1) { background: linear-gradient(135deg, #a8b8f0 0%, #c5b3d9 100%); } /* Dosare - Mov */
+        .stat-card:nth-child(2) { background: linear-gradient(135deg, #ffd89b 0%, #ffb88c 100%); } /* În lucru - Portocaliu */
+        .stat-card:nth-child(3) { background: linear-gradient(135deg, #9fd8f5 0%, #a3e0f7 100%); } /* Termene - Albastru */
+        .stat-card:nth-child(4) { background: linear-gradient(135deg, #a8e6c8 0%, #b3f0d9 100%); } /* Task-uri - Verde */
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #5a6c7d;
+        }
+
+        .search-box {
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+        .form-panel {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-panel h3 {
+            margin-bottom: 15px;
+            color: #2d3748;
+            font-size: 16px;
+        }
+
+        .fab-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #2a5298;
+            color: white;
+            border: none;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(42, 82, 152, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 15px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 5px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .calendar-day.today {
+            border-color: #2a5298;
+            background: #e6f2ff;
+            font-weight: 700;
+        }
+
+        .calendar-day.has-termen {
+            background: #fff4e6;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        @media (min-width: 600px) {
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Banner de instalare -->
+    <div id="installBanner" class="install-banner">
+        <div>📱 <strong>Instalează aplicația pe telefon!</strong></div>
+        <div style="font-size: 12px; margin-top: 4px;">Funcționează offline, fără reclame, 100% gratuit</div>
+        <button onclick="installApp()">⬇️ Instalează acum</button>
+    </div>
+
+    <div class="app-container">
+        <div class="header">
+            <h1>⚖️ Agenda Juridică</h1>
+            <p>Dosare și termene</p>
+            <div style="display: flex; gap: 6px; margin-top: 10px; justify-content: center;">
+                <button style="padding: 6px 12px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: white; font-size: 11px; cursor: pointer; font-weight: 600;" onclick="exportData()">💾 Export backup</button>
+                <label style="padding: 6px 12px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: white; font-size: 11px; cursor: pointer; font-weight: 600;">
+                    📂 Import backup
+                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                </label>
+            </div>
+            <div class="sync-status">
+                <span id="syncText">📱 Date salvate local</span>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('dashboard')">📊<br>Panou</button>
+            <button class="tab" onclick="switchTab('clienti')">👥<br>Clienți</button>
+            <button class="tab" onclick="switchTab('dosare')">📁<br>Dosare</button>
+            <button class="tab" onclick="switchTab('up')">🔍<br>UP</button>
+            <button class="tab" onclick="switchTab('dosareLucru')">⚙️<br>În lucru</button>
+            <button class="tab" onclick="switchTab('dosareTerminate')">✅<br>Terminate</button>
+            <button class="tab" onclick="switchTab('todo')">📝<br>To-Do</button>
+            <button class="tab" onclick="switchTab('termene')">📅<br>Termene</button>
+            <button class="tab" onclick="switchTab('calendar')">🗓️<br>Calendar</button>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard -->
+            <div id="dashboard" class="tab-content active">
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalDosare">0</div>
+                        <div class="stat-label">📁 Dosare active</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="dosareLucruCount">0</div>
+                        <div class="stat-label">⚙️ Dosare în lucru</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="termeneViitoare">0</div>
+                        <div class="stat-label">📅 Termene viitoare</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="todosPending">0</div>
+                        <div class="stat-label">📝 Task-uri active</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 15px; color: #2d3748;">Task-uri urgente</h3>
+                <div id="todosUrgenteDashboard"></div>
+
+                <h3 style="margin-bottom: 15px; margin-top: 20px; color: #2d3748;">Termene urgente</h3>
+                <div id="termeneUrgenteDashboard"></div>
+            </div>
+
+            <!-- Clienți -->
+            <div id="clienti" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #2d3748; font-size: 24px; font-weight: 700;">Clienți</h2>
+                    <button class="btn btn-primary" onclick="showAddClientForm()">+ Client</button>
+                </div>
+
+                <!-- Formular adăugare/editare client -->
+                <div id="addClientForm" style="display: none;" class="form-panel">
+                    <h3 id="clientFormTitle">Client nou</h3>
+                    <form onsubmit="addClient(event)">
+                        <div class="form-group">
+                            <label>Nume *</label>
+                            <input type="text" id="numeClient" required placeholder="Nume complet">
+                        </div>
+                        <div class="form-group">
+                            <label>CNP</label>
+                            <input type="text" id="cnpClient" placeholder="CNP" maxlength="13">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact</label>
+                            <input type="text" id="contactClient" placeholder="Telefon / Email">
+                        </div>
+                        <div class="form-group">
+                            <label>Adresă</label>
+                            <textarea id="adresaClient" placeholder="Adresă completă"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Onorariu plătit</label>
+                            <input type="number" id="onorariuPlatit" placeholder="0" min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Onorariu restant</label>
+                            <input type="number" id="onorariuRestant" placeholder="0" min="0" step="0.01">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Salvează</button>
+                        <button type="button" class="btn" onclick="hideAddClientForm()" style="background: #e9ecef; color: #495057; margin-left: 8px;">Anulează</button>
+                    </form>
+                </div>
+
+                <!-- Căutare clienți -->
+                <div class="search-box">
+                    <input type="text" id="searchClienti" placeholder="🔍 Caută clienți..." onkeyup="filterClienti()">
+                </div>
+
+                <!-- Listă clienți -->
+                <div id="clientiList"></div>
+            </div>
+
+            <!-- Dosare -->
+            <div id="dosare" class="tab-content">
+                <div id="addDosarForm" style="display: none;" class="form-panel">
+                    <h3 id="formTitle">Dosar nou</h3>
+                    <form onsubmit="addDosar(event)">
+                        <div class="form-group">
+                            <label>Număr dosar *</label>
+                            <input type="text" id="numarDosar" required placeholder="ex: 1234/2024">
+                        </div>
+                        <div class="form-group">
+                            <label>Instanță *</label>
+                            <input type="text" id="instanta" required placeholder="Judecătoria...">
+                        </div>
+                        <div class="form-group">
+                            <label>Tip dosar *</label>
+                            <select id="tipDosar" required>
+                                <option value="">Selectează...</option>
+                                <option value="civil">Civil</option>
+                                <option value="penal">Penal</option>
+                                <option value="contencios">Contencios</option>
+                                <option value="comercial">Comercial</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Client</label>
+                            <input type="text" id="client" placeholder="Nume client">
+                        </div>
+                        <div class="form-group">
+                            <label>Obiect</label>
+                            <textarea id="obiect" placeholder="Descriere"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Link ecris</label>
+                            <input type="url" id="linkEcris" placeholder="https://portal.just.ro/...">
+                        </div>
+                        <div class="form-group">
+                            <label>Stadiu procesual</label>
+                            <select id="stadiuProcesual">
+                                <option value="Fond">Fond</option>
+                                <option value="Apel">Apel</option>
+                                <option value="Recurs">Recurs</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Cale atac</label>
+                            <select id="caleAtac">
+                                <option value="Niciuna">Niciuna</option>
+                                <option value="Apel">Apel</option>
+                                <option value="Recurs">Recurs</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Notițe dosar</label>
+                            <textarea id="notiteDosar" placeholder="Notițe generale despre dosar..."></textarea>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="submit" class="btn btn-primary">Salvează</button>
+                            <button type="button" class="btn" onclick="hideAddDosarForm()" style="background: #e2e8f0;">Anulează</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="searchDosare" placeholder="🔍 Caută dosare..." onkeyup="filterDosare()">
+                </div>
+                <div id="dosareList" class="dosare-grid"></div>
+                <button class="fab-button" onclick="showAddDosarForm()">+</button>
+            </div>
+
+            <!-- Urmărire Penală (UP) -->
+            <div id="up" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #2d3748; font-size: 24px; font-weight: 700;">Urmărire Penală</h2>
+                    <button class="btn btn-primary" onclick="showAddUPForm()">+ Dosar UP</button>
+                </div>
+
+                <!-- Formular adăugare/editare UP -->
+                <div id="addUPForm" style="display: none;" class="form-panel">
+                    <h3 id="upFormTitle">Dosar UP nou</h3>
+                    <form onsubmit="addUP(event)">
+                        <div class="form-group">
+                            <label>Număr dosar penal *</label>
+                            <input type="text" id="numarUP" required placeholder="ex: 123/P/2024">
+                        </div>
+                        <div class="form-group">
+                            <label>Client *</label>
+                            <input type="text" id="clientUP" required placeholder="Nume client">
+                        </div>
+                        <div class="form-group">
+                            <label>Tip client *</label>
+                            <select id="tipClientUP" required>
+                                <option value="">Selectează...</option>
+                                <option value="Suspect">Suspect</option>
+                                <option value="Inculpat">Inculpat</option>
+                                <option value="Persoană vătămată">Persoană vătămată</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Obiect urmărire penală</label>
+                            <textarea id="obiectUP" placeholder="Fapta penală..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Parchet *</label>
+                            <input type="text" id="parchetUP" required placeholder="Parchetul...">
+                        </div>
+                        <div class="form-group">
+                            <label>Nume procuror</label>
+                            <input type="text" id="procurorUP" placeholder="Nume procuror">
+                        </div>
+                        <div class="form-group">
+                            <label>Nume polițist</label>
+                            <input type="text" id="politistUP" placeholder="Nume polițist">
+                        </div>
+                        <div class="form-group">
+                            <label>Date contact anchetă</label>
+                            <input type="text" id="contactAnchetaUP" placeholder="Telefon anchetă">
+                        </div>
+                        <div class="form-group">
+                            <label>Data audiere</label>
+                            <input type="date" id="dataAudiereUP">
+                            <small style="color: #6c757d; font-size: 11px;">* Se va adăuga automat în calendar</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Notițe</label>
+                            <textarea id="notiteUP" placeholder="Notițe despre dosar..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Salvează</button>
+                        <button type="button" class="btn" onclick="hideAddUPForm()" style="background: #e9ecef; color: #495057; margin-left: 8px;">Anulează</button>
+                    </form>
+                </div>
+
+                <!-- Căutare UP -->
+                <div class="search-box">
+                    <input type="text" id="searchUP" placeholder="🔍 Caută dosare UP..." onkeyup="filterUP()">
+                </div>
+
+                <!-- Listă dosare UP -->
+                <div id="upList"></div>
+            </div>
+
+            <!-- Dosare în Lucru -->
+            <div id="dosareLucru" class="tab-content">
+                <div style="margin-bottom: 15px;">
+                    <h2 style="color: #2d3748; margin-bottom: 10px;">Dosare în lucru</h2>
+                    <p style="color: #5a6c7d; font-size: 13px;">Dosare care nu au primit încă termen de judecată</p>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="searchDosareLucru" placeholder="🔍 Caută dosare în lucru..." onkeyup="filterDosareLucru()">
+                </div>
+                <div id="dosareLucruList" class="dosare-grid"></div>
+            </div>
+
+            <!-- Dosare Terminate -->
+            <div id="dosareTerminate" class="tab-content">
+                <div class="search-box">
+                    <input type="text" id="searchDosareTerminate" placeholder="🔍 Caută..." onkeyup="filterDosareTerminate()">
+                </div>
+                <div id="dosareTerminateList" class="dosare-grid"></div>
+            </div>
+
+            <!-- To-Do List -->
+            <div id="todo" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <h2 style="color: #2d3748;">Lista de task-uri</h2>
+                    <button class="btn btn-primary btn-small" onclick="showAddTodoForm()">+ Adaugă task</button>
+                </div>
+
+                <div id="addTodoForm" style="display: none;" class="form-panel">
+                    <h3>Task nou</h3>
+                    <form onsubmit="addTodo(event)">
+                        <div class="form-group">
+                            <label>Titlu task *</label>
+                            <input type="text" id="todoTitlu" required placeholder="ex: Depunere înscris">
+                        </div>
+                        <div class="form-group">
+                            <label>Descriere</label>
+                            <textarea id="todoDescriere" placeholder="Detalii suplimentare..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Prioritate *</label>
+                            <select id="todoPrioritate" required>
+                                <option value="">Selectează...</option>
+                                <option value="urmarit">De urmărit</option>
+                                <option value="urgent">Urgent</option>
+                                <option value="foarte-urgent">Foarte urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Data și ora limită (opțional)</label>
+                            <input type="datetime-local" id="todoDataLimita">
+                        </div>
+                        <div class="form-group">
+                            <label>Dosar asociat (opțional)</label>
+                            <select id="todoDosarId">
+                                <option value="">Fără dosar asociat</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="submit" class="btn btn-primary">Salvează</button>
+                            <button type="button" class="btn" onclick="hideAddTodoForm()" style="background: #e2e8f0;">Anulează</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <button class="btn btn-small" onclick="filterTodoByPriority('all')" style="background: #6c757d; color: white; margin-right: 5px;">Toate</button>
+                    <button class="btn btn-small" onclick="filterTodoByPriority('foarte-urgent')" style="background: #8b0000; color: white; margin-right: 5px;">Foarte urgent</button>
+                    <button class="btn btn-small" onclick="filterTodoByPriority('urgent')" style="background: #dc3545; color: white; margin-right: 5px;">Urgent</button>
+                    <button class="btn btn-small" onclick="filterTodoByPriority('urmarit')" style="background: #ffc107; color: #000;">De urmărit</button>
+                </div>
+
+                <div id="todoList"></div>
+                <button class="fab-button" onclick="showAddTodoForm()">+</button>
+            </div>
+
+            <!-- Termene -->
+            <div id="termene" class="tab-content">
+                <div id="addTermenForm" style="display: none;" class="form-panel">
+                    <h3>Termen nou</h3>
+                    <form onsubmit="addTermen(event)">
+                        <div class="form-group">
+                            <label>Dosar *</label>
+                            <select id="termenDosar" required>
+                                <option value="">Selectează dosar...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Data și ora *</label>
+                            <input type="datetime-local" id="dataOra" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tip termen *</label>
+                            <select id="tipTermen" required>
+                                <option value="">Selectează...</option>
+                                <option value="judecata">Termen de judecată</option>
+                                <option value="completare">Completare lipsuri</option>
+                                <option value="depunere">Depunere cerere</option>
+                                <option value="deadline">Termen limită</option>
+                                <option value="altele">Altele</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Notițe</label>
+                            <textarea id="notiteTermen" placeholder="Detalii..."></textarea>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="submit" class="btn btn-primary">Salvează</button>
+                            <button type="button" class="btn" onclick="hideAddTermenForm()" style="background: #e2e8f0;">Anulează</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="termeneList"></div>
+                <button class="fab-button" onclick="showAddTermenForm()">+</button>
+            </div>
+
+            <!-- Calendar -->
+            <div id="calendar" class="tab-content">
+                <div class="calendar-header">
+                    <button class="btn btn-small btn-primary" onclick="prevMonth()">◀</button>
+                    <h3 id="currentMonth" style="color: #2d3748;"></h3>
+                    <button class="btn btn-small btn-primary" onclick="nextMonth()">▶</button>
+                </div>
+                <div id="calendarGrid" class="calendar-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Fișa Dosar -->
+    <div id="fisaModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); overflow: auto;">
+        <div style="background: white; margin: 30px auto; padding: 0; max-width: 800px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; font-size: 22px;">📁 Fișa dosarului</h2>
+                <button onclick="closeFisaModal()" style="background: rgba(255,255,255,0.2); border: none; color: white; font-size: 28px; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; line-height: 1;">&times;</button>
+            </div>
+            <div id="fisaContent" style="padding: 25px; max-height: 70vh; overflow-y: auto;">
+                <!-- Conținutul se încarcă dinamic -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let clienti = [];
+        let dosare = [];
+        let dosareUP = [];
+        let dosareTerminate = [];
+        let dosareLucru = [];
+        let termene = [];
+        let todos = [];
+        let currentMonth = new Date();
+        let editingClientId = null;
+        let editingDosarId = null;
+        let editingUPId = null;
+        let deferredPrompt = null;
+
+        // PWA Installation
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBanner').style.display = 'block';
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        document.getElementById('installBanner').style.display = 'none';
+                        showAlert('✅ Aplicația a fost instalată!', 'success');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                // Pentru iOS sau browsere care nu suportă beforeinstallprompt
+                showAlert('📱 Pentru a instala: apasă pe Share → Add to Home Screen', 'info');
+            }
+        }
+
+        function formatDate(date) {
+            const d = new Date(date);
+            return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        }
+
+        function formatDateTime(dateTime) {
+            const d = new Date(dateTime);
+            return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        }
+
+        function saveData() {
+            localStorage.setItem('clienti', JSON.stringify(clienti));
+            localStorage.setItem('dosare', JSON.stringify(dosare));
+            localStorage.setItem('dosareUP', JSON.stringify(dosareUP));
+            localStorage.setItem('dosareTerminate', JSON.stringify(dosareTerminate));
+            localStorage.setItem('dosareLucru', JSON.stringify(dosareLucru));
+            localStorage.setItem('termene', JSON.stringify(termene));
+            localStorage.setItem('todos', JSON.stringify(todos));
+            document.getElementById('syncText').textContent = '✅ Salvat!';
+            setTimeout(() => {
+                document.getElementById('syncText').textContent = '📱 Date salvate local';
+            }, 2000);
+        }
+
+        function loadData() {
+            clienti = JSON.parse(localStorage.getItem('clienti')) || [];
+            dosare = JSON.parse(localStorage.getItem('dosare')) || [];
+            dosareUP = JSON.parse(localStorage.getItem('dosareUP')) || [];
+            dosareTerminate = JSON.parse(localStorage.getItem('dosareTerminate')) || [];
+            dosareLucru = JSON.parse(localStorage.getItem('dosareLucru')) || [];
+            termene = JSON.parse(localStorage.getItem('termene')) || [];
+            todos = JSON.parse(localStorage.getItem('todos')) || [];
+        }
+
+        function exportData() {
+            const data = {
+                clienti,
+                dosare,
+                dosareUP,
+                dosareTerminate,
+                dosareLucru,
+                termene,
+                todos,
+                exportDate: new Date().toISOString(),
+                version: '2.0'
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `agenda-backup-${formatDate(new Date())}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showAlert('✅ Backup creat cu succes!', 'success');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (confirm('⚠️ Importul va înlocui toate datele actuale. Sigur continui?')) {
+                        clienti = data.clienti || [];
+                        dosare = data.dosare || [];
+                        dosareUP = data.dosareUP || [];
+                        dosareTerminate = data.dosareTerminate || [];
+                        dosareLucru = data.dosareLucru || [];
+                        termene = data.termene || [];
+                        todos = data.todos || [];
+                        
+                        saveData();
+                        updateDashboard();
+                        renderCalendar();
+                        renderClientiList();
+                        renderUPList();
+                        showAlert('✅ Date importate cu succes!', 'success');
+                    }
+                } catch (error) {
+                    showAlert('❌ Eroare la importul datelor! Verifică fișierul.', 'danger');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (confirm('⚠️ Importul va înlocui toate datele actuale. Sigur continui?')) {
+                        dosare = data.dosare || [];
+                        dosareTerminate = data.dosareTerminate || [];
+                        dosareLucru = data.dosareLucru || [];
+                        termene = data.termene || [];
+                        todos = data.todos || [];
+                        
+                        saveData();
+                        updateDashboard();
+                        renderCalendar();
+                        showAlert('✅ Date importate cu succes!', 'success');
+                    }
+                } catch (error) {
+                    showAlert('❌ Eroare la importul datelor! Verifică fișierul.', 'danger');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+
+            if (tabName === 'calendar') renderCalendar();
+            if (tabName === 'dashboard') updateDashboard();
+            if (tabName === 'clienti') renderClientiList();
+            if (tabName === 'up') renderUPList();
+            if (tabName === 'dosareTerminate') renderDosareTerminate();
+            if (tabName === 'dosareLucru') renderDosareLucru();
+            if (tabName === 'todo') renderTodos();
+        }
+
+        function showAddDosarForm() {
+            editingDosarId = null;
+            document.getElementById('formTitle').textContent = 'Dosar nou';
+            document.getElementById('addDosarForm').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function hideAddDosarForm() {
+            editingDosarId = null;
+            document.getElementById('addDosarForm').style.display = 'none';
+            document.querySelector('#addDosarForm form').reset();
+        }
+
+        function editDosar(id) {
+            const dosar = dosare.find(d => d.id === id);
+            if (!dosar) return;
+
+            editingDosarId = id;
+            document.getElementById('numarDosar').value = dosar.numar;
+            document.getElementById('instanta').value = dosar.instanta;
+            document.getElementById('tipDosar').value = dosar.tip;
+            document.getElementById('client').value = dosar.client || '';
+            document.getElementById('obiect').value = dosar.obiect || '';
+            document.getElementById('linkEcris').value = dosar.linkEcris || '';
+            document.getElementById('stadiuProcesual').value = dosar.stadiuProcesual || 'Fond';
+            document.getElementById('caleAtac').value = dosar.caleAtac || 'Niciuna';
+            document.getElementById('notiteDosar').value = dosar.notiteDosar || '';
+            
+            document.getElementById('formTitle').textContent = 'Editează dosar';
+            document.getElementById('addDosarForm').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function showAddTermenForm() {
+            updateTermenDosarSelect();
+            document.getElementById('addTermenForm').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function hideAddTermenForm() {
+            document.getElementById('addTermenForm').style.display = 'none';
+            document.querySelector('#addTermenForm form').reset();
+        }
+
+        function addDosar(e) {
+            e.preventDefault();
+            
+            const dosarData = {
+                numar: document.getElementById('numarDosar').value,
+                instanta: document.getElementById('instanta').value,
+                tip: document.getElementById('tipDosar').value,
+                client: document.getElementById('client').value,
+                obiect: document.getElementById('obiect').value,
+                linkEcris: document.getElementById('linkEcris').value,
+                stadiuProcesual: document.getElementById('stadiuProcesual').value,
+                caleAtac: document.getElementById('caleAtac').value,
+                notiteDosar: document.getElementById('notiteDosar').value
+            };
+
+            if (editingDosarId) {
+                const index = dosare.findIndex(d => d.id === editingDosarId);
+                if (index !== -1) {
+                    dosare[index] = { ...dosare[index], ...dosarData };
+                    showAlert('Dosar actualizat!', 'success');
+                }
+            } else {
+                dosare.push({
+                    id: Date.now(),
+                    ...dosarData,
+                    sedinte: [],
+                    sarcini: [],
+                    dataAdaugare: new Date().toISOString()
+                });
+                showAlert('Dosar adăugat!', 'success');
+            }
+
+            saveData();
+            hideAddDosarForm();
+            renderDosare();
+            updateDashboard();
+        }
+
+        function terminaDosar(id) {
+            if (confirm('Muți dosarul la terminate?')) {
+                const index = dosare.findIndex(d => d.id === id);
+                if (index !== -1) {
+                    dosare[index].dataTerminare = new Date().toISOString();
+                    dosareTerminate.push(dosare[index]);
+                    dosare.splice(index, 1);
+                    saveData();
+                    renderDosare();
+                    updateDashboard();
+                    showAlert('Dosar terminat!', 'success');
+                }
+            }
+        }
+
+        function reactivareDosar(id) {
+            if (confirm('Reactivezi dosarul?')) {
+                const index = dosareTerminate.findIndex(d => d.id === id);
+                if (index !== -1) {
+                    const dosar = dosareTerminate[index];
+                    delete dosar.dataTerminare;
+                    
+                    // Verifică dacă e dosar UP
+                    if (dosar.fromUP || dosar.isUP) {
+                        // Reconvertește în UP
+                        const upDosar = {
+                            id: dosar.id,
+                            numar: dosar.numar,
+                            client: dosar.client,
+                            tipClient: dosar.tipClient || 'Suspect',
+                            obiect: dosar.obiect,
+                            parchet: dosar.instanta,
+                            procuror: dosar.procuror || '',
+                            politist: dosar.politist || '',
+                            contactAncheta: dosar.contactAncheta || '',
+                            dataAudiere: dosar.dataAudiere || '',
+                            notite: dosar.notiteDosar || '',
+                            dataAdaugare: dosar.dataAdaugare
+                        };
+                        dosareUP.push(upDosar);
+                        dosareTerminate.splice(index, 1);
+                        saveData();
+                        renderDosareTerminate();
+                        renderUPList();
+                        showAlert('✅ Dosar UP reactivat!', 'success');
+                    } else {
+                        // Dosar normal
+                        dosare.push(dosar);
+                        dosareTerminate.splice(index, 1);
+                        saveData();
+                        renderDosareTerminate();
+                        renderDosare();
+                        showAlert('✅ Dosar reactivat!', 'success');
+                    }
+                }
+            }
+        }
+
+        function addTermen(e) {
+            e.preventDefault();
+            
+            termene.push({
+                id: Date.now(),
+                dosarId: parseInt(document.getElementById('termenDosar').value),
+                dataOra: document.getElementById('dataOra').value,
+                tip: document.getElementById('tipTermen').value,
+                notite: document.getElementById('notiteTermen').value
+            });
+
+            saveData();
+            hideAddTermenForm();
+            
+            // Actualizează TOATE randările pentru sincronizare completă
+            renderTermene();
+            renderDosare();
+            renderDosareLucru();
+            renderCalendar();
+            updateDashboard();
+            
+            showAlert('✅ Termen adăugat!', 'success');
+        }
+
+        function deleteDosar(id) {
+            if (confirm('Ștergi dosarul definitiv?')) {
+                dosare = dosare.filter(d => d.id !== id);
+                termene = termene.filter(t => t.dosarId !== id);
+                saveData();
+                renderDosare();
+                renderTermene();
+                updateDashboard();
+                showAlert('Dosar șters!', 'danger');
+            }
+        }
+
+        function deleteDosarTerminat(id) {
+            if (confirm('Ștergi dosarul definitiv?')) {
+                dosareTerminate = dosareTerminate.filter(d => d.id !== id);
+                saveData();
+                renderDosareTerminate();
+                showAlert('Dosar șters!', 'danger');
+            }
+        }
+
+        function deleteTermen(id) {
+            if (confirm('Ștergi termenul?')) {
+                termene = termene.filter(t => t.id !== id);
+                saveData();
+                
+                // Actualizează TOATE randările
+                renderTermene();
+                renderDosare();
+                renderDosareLucru();
+                renderCalendar();
+                updateDashboard();
+                
+                showAlert('🗑️ Termen șters!', 'danger');
+            }
+        }
+
+        function renderDosare() {
+            const container = document.getElementById('dosareList');
+            
+            if (dosare.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>Nu ai dosare active</h3><p>Apasă + pentru a adăuga</p></div>';
+                return;
+            }
+
+            // SORTARE după cel mai apropiat termen
+            const now = new Date();
+            const dosareSortate = dosare.sort((a, b) => {
+                const termeneA = termene.filter(t => t.dosarId === a.id && new Date(t.dataOra) > now);
+                const termeneB = termene.filter(t => t.dosarId === b.id && new Date(t.dataOra) > now);
+                
+                const nextA = termeneA.sort((x,y) => new Date(x.dataOra) - new Date(y.dataOra))[0];
+                const nextB = termeneB.sort((x,y) => new Date(x.dataOra) - new Date(y.dataOra))[0];
+                
+                if (!nextA && !nextB) return 0;
+                if (!nextA) return 1;
+                if (!nextB) return -1;
+                
+                return new Date(nextA.dataOra) - new Date(nextB.dataOra);
+            });
+
+            container.innerHTML = dosareSortate.map(dosar => {
+                const dosarTermene = termene.filter(t => t.dosarId === dosar.id);
+                
+                // Găsește următorul termen viitor
+                const termeneViitoare = termene.filter(t => t.dosarId === dosar.id && new Date(t.dataOra) > now);
+                const nextTermen = termeneViitoare.sort((a,b) => new Date(a.dataOra) - new Date(b.dataOra))[0];
+                
+                return `
+                    <div class="dosar-card">
+                        <div class="dosar-numar">${dosar.numar}</div>
+                        <span class="badge badge-${dosar.tip}">${dosar.tip}</span>
+                        <div class="dosar-info"><strong>🏛️ Instanță:</strong> ${dosar.instanta}</div>
+                        ${dosar.client ? `<div class="dosar-info"><strong>👤 Client:</strong> ${dosar.client}</div>` : ''}
+                        ${dosar.obiect ? `<div class="dosar-info"><strong>📝 Obiect:</strong> ${dosar.obiect}</div>` : ''}
+                        ${dosar.linkEcris ? `<div class="dosar-info"><strong>🔗 Link:</strong> <a href="${dosar.linkEcris}" target="_blank">Portal</a></div>` : ''}
+                        <div class="dosar-info"><strong>📅 Termene:</strong> ${dosarTermene.length}</div>
+                        
+                        ${nextTermen ? `
+                            <div style="margin-top: 10px; padding: 12px; background: #E3F2FD; border-left: 4px solid #2196F3; border-radius: 6px;">
+                                <strong style="color: #1976D2; font-size: 14px;">📅 Următorul termen:</strong>
+                                <div style="color: #0D47A1; font-weight: 600; margin-top: 4px;">${formatDateTime(nextTermen.dataOra)}</div>
+                                <div style="color: #1976D2; font-size: 12px; margin-top: 2px;">${nextTermen.tip}</div>
+                            </div>
+                        ` : '<div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; font-size: 13px; color: #6c757d;">📅 Nu are termene viitoare</div>'}
+                        
+                        <div class="dosar-info"><strong>Adăugat:</strong> ${formatDate(dosar.dataAdaugare)}</div>
+                        <div class="dosar-actions">
+                            <button class="btn btn-primary btn-small" onclick="viewFisaDosar(${dosar.id})">👁️ Fișă</button>
+                            <button class="btn btn-primary btn-small" onclick="editDosar(${dosar.id})">✏️</button>
+                            <button class="btn btn-primary btn-small" onclick="adaugaTermenDosar(${dosar.id})" title="Adaugă termen">📅 +</button>
+                            <button class="btn btn-small" onclick="mutaLaDosareLucru(${dosar.id})" style="background: #ffc107; color: #000;">⚙️</button>
+                            <button class="btn btn-success btn-small" onclick="terminaDosar(${dosar.id})">✅</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteDosar(${dosar.id})">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderDosareTerminate() {
+            const container = document.getElementById('dosareTerminateList');
+            
+            if (dosareTerminate.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>Nu ai dosare terminate</h3></div>';
+                return;
+            }
+
+            container.innerHTML = dosareTerminate.map(dosar => `
+                <div class="dosar-card" style="opacity: 0.8;">
+                    <div class="dosar-numar">${dosar.numar}</div>
+                    <span class="badge badge-${dosar.tip}">${dosar.tip}</span>
+                    ${dosar.isUP || dosar.fromUP ? '<span class="badge" style="background: #f3e5f5; color: #6a1b9a;">UP</span>' : ''}
+                    <span class="badge" style="background: #d4edda; color: #155724;">TERMINAT</span>
+                    <div class="dosar-info"><strong>🏛️ Instanță:</strong> ${dosar.instanta}</div>
+                    ${dosar.client ? `<div class="dosar-info"><strong>👤 Client:</strong> ${dosar.client}</div>` : ''}
+                    ${dosar.linkEcris ? `<div class="dosar-info"><strong>🔗 Link:</strong> <a href="${dosar.linkEcris}" target="_blank">Portal</a></div>` : ''}
+                    <div class="dosar-info"><strong>Terminat:</strong> ${formatDate(dosar.dataTerminare)}</div>
+                    <div class="dosar-actions">
+                        <button class="btn btn-primary btn-small" onclick="reactivareDosar(${dosar.id})">→ ${dosar.isUP || dosar.fromUP ? 'Reactivează în UP' : 'Reactivează'}</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteDosarTerminat(${dosar.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTermene() {
+            const container = document.getElementById('termeneList');
+            
+            if (termene.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>Nu ai termene</h3><p>Apasă + pentru a adăuga</p></div>';
+                return;
+            }
+
+            const sorted = [...termene].sort((a, b) => new Date(a.dataOra) - new Date(b.dataOra));
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            container.innerHTML = sorted.map(termen => {
+                const allDosare = [...dosare, ...dosareLucru, ...dosareTerminate];
+                const dosar = allDosare.find(d => d.id === termen.dosarId);
+                const termenDate = new Date(termen.dataOra);
+                const termenStart = new Date(termenDate.getFullYear(), termenDate.getMonth(), termenDate.getDate());
+                const daysUntil = Math.round((termenStart - todayStart) / (1000 * 60 * 60 * 24));
+                const isUrgent = daysUntil <= 7 && daysUntil >= 0;
+                const esteTrecut = termenDate < now;
+                
+                return `
+                    <div class="termen-item ${isUrgent ? 'termen-urgent' : ''}" style="opacity: ${esteTrecut ? '0.5' : '1'}; background: ${esteTrecut ? '#f8f9fa' : 'white'};">
+                        <div class="termen-data">
+                            ${formatDateTime(termen.dataOra)}
+                            ${esteTrecut ? '<span class="badge" style="background: #6c757d; color: white; margin-left: 8px;">TRECUT</span>' : ''}
+                        </div>
+                        <div class="termen-detalii">
+                            <strong>Dosar:</strong> ${dosar ? dosar.numar : 'N/A'} • 
+                            <strong>Tip:</strong> ${termen.tip}
+                            ${isUrgent && !esteTrecut ? ` • <strong style="color: #dc3545;">${daysUntil === 0 ? 'astăzi' : daysUntil === 1 ? 'mâine' : `în ${daysUntil} zile`}</strong>` : ''}
+                        </div>
+                        ${termen.notite ? `<div class="termen-detalii" style="margin-top: 6px;">${termen.notite}</div>` : ''}
+                        <div style="margin-top: 10px;">
+                            <button class="btn btn-danger btn-small" onclick="deleteTermen(${termen.id})">🗑️ Șterge</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateDashboard() {
+            // Statistici - doar 4 carduri
+            document.getElementById('totalDosare').textContent = dosare.length;
+            document.getElementById('dosareLucruCount').textContent = dosareLucru.length;
+            
+            const now = new Date();
+            const viitoare = termene.filter(t => new Date(t.dataOra) > now);
+            document.getElementById('termeneViitoare').textContent = viitoare.length;
+            
+            const todosPending = todos.filter(t => !t.completed);
+            document.getElementById('todosPending').textContent = todosPending.length;
+
+            // Task-uri urgente - CA TERMENELE: 7 zile + sortare + calcul corect
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            // Filtrare: TOATE task-urile cu dată în următoarele 7 zile (indiferent de prioritate)
+            const todosUrgente = todosPending.filter(t => {
+                if (!t.dataLimita) return false;
+                const taskDate = new Date(t.dataLimita);
+                const taskStart = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
+                const diff = Math.round((taskStart - todayStart) / (1000 * 60 * 60 * 24));
+                return diff <= 7 && diff >= -1; // Include și întârziate cu 1 zi
+            }).sort((a, b) => new Date(a.dataLimita) - new Date(b.dataLimita)); // Sortare cronologică!
+            
+            const todosContainer = document.getElementById('todosUrgenteDashboard');
+            if (todosUrgente.length === 0) {
+                todosContainer.innerHTML = '<div class="card"><p style="color: #5a6c7d; margin: 0;">Nu ai task-uri în următoarele 7 zile 🎉</p></div>';
+            } else {
+                todosContainer.innerHTML = todosUrgente.map(todo => {
+                    const priorityLabels = {
+                        'foarte-urgent': 'FOARTE URGENT',
+                        'urgent': 'URGENT',
+                        'urmarit': 'DE URMĂRIT'
+                    };
+                    
+                    const allDosare = [...dosare, ...dosareLucru];
+                    const dosar = allDosare.find(d => d.id === todo.dosarId);
+                    
+                    // Calcul CORECT al zilelor
+                    const taskDate = new Date(todo.dataLimita);
+                    const taskStart = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
+                    const daysUntil = Math.round((taskStart - todayStart) / (1000 * 60 * 60 * 24));
+                    
+                    // Badge cu zile
+                    let daysText = '';
+                    if (daysUntil < 0) {
+                        daysText = `<span class="badge-zile" style="background: #8b0000;">ÎNTÂRZIAT ${Math.abs(daysUntil)} ${Math.abs(daysUntil) === 1 ? 'ZI' : 'ZILE'}</span>`;
+                    } else if (daysUntil === 0) {
+                        daysText = '<span class="badge-zile" style="background: #dc3545;">ASTĂZI</span>';
+                    } else if (daysUntil === 1) {
+                        daysText = '<span class="badge-zile" style="background: #e91e63;">MÂINE</span>';
+                    } else {
+                        daysText = `<span class="badge-zile" style="background: #e91e63;">ÎN ${daysUntil} ZILE</span>`;
+                    }
+                    
+                    return `
+                        <div class="termen-item termen-urgent priority-${todo.prioritate}">
+                            <div class="termen-data">
+                                ✅ ${todo.titlu}
+                                <span class="badge-zile" style="background: ${todo.prioritate === 'foarte-urgent' ? '#8b0000' : todo.prioritate === 'urgent' ? '#dc3545' : '#ffc107'}; color: ${todo.prioritate === 'urmarit' ? '#000' : 'white'}">${priorityLabels[todo.prioritate]}</span>
+                                ${daysText}
+                            </div>
+                            <div class="termen-detalii" style="margin-top: 10px;">
+                                ${todo.descriere ? `<div style="font-weight: 600; color: #2d3748; font-size: 15px; margin-bottom: 6px;">${todo.descriere}</div>` : ''}
+                                ${todo.dataLimita ? `<div style="font-size: 15px; margin-bottom: 6px;"><strong>📅 Termen:</strong> ${todo.dataLimita.includes('T') ? formatDateTime(todo.dataLimita) : formatDate(todo.dataLimita)}</div>` : ''}
+                                ${dosar ? `<div style="font-size: 15px;"><strong>📁 Dosar:</strong> ${dosar.numar}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+
+            // Termene urgente - ALBASTRU cu NUME CLIENT + culori diferite 0-1 vs 2-7
+            // Calcul CORECT al zilelor: folosim startOfDay pentru a compara doar zilele, nu orele
+            // (todayStart deja declarat mai sus pentru task-uri)
+            
+            const urgent = termene.filter(t => {
+                const termenDate = new Date(t.dataOra);
+                const termenStart = new Date(termenDate.getFullYear(), termenDate.getMonth(), termenDate.getDate());
+                const diff = Math.round((termenStart - todayStart) / (1000 * 60 * 60 * 24));
+                return diff <= 7 && diff >= 0;
+            }).sort((a, b) => new Date(a.dataOra) - new Date(b.dataOra));  // Sortare după dată și oră!
+
+            const container = document.getElementById('termeneUrgenteDashboard');
+            if (urgent.length === 0) {
+                container.innerHTML = '<div class="card"><p style="color: #5a6c7d; margin: 0;">Nu ai termene urgente în următoarele 7 zile 🎉</p></div>';
+            } else {
+                container.innerHTML = urgent.map(termen => {
+                    const allDosare = [...dosare, ...dosareLucru, ...dosareTerminate];
+                    const dosar = allDosare.find(d => d.id === termen.dosarId);
+                    const client = clienti.find(c => c.nume === dosar?.client);
+                    
+                    // Calcul CORECT al zilelor
+                    const termenDate = new Date(termen.dataOra);
+                    const termenStart = new Date(termenDate.getFullYear(), termenDate.getMonth(), termenDate.getDate());
+                    const daysUntil = Math.round((termenStart - todayStart) / (1000 * 60 * 60 * 24));
+                    
+                    // Culori diferite pentru 0-1 zile vs 2-7 zile
+                    const isFoarteUrgent = daysUntil <= 1;
+                    const backgroundColor = isFoarteUrgent ? '#BBDEFB' : '#E3F2FD';
+                    const borderColor = isFoarteUrgent ? '#1976D2' : '#2196F3';
+                    const textColor = isFoarteUrgent ? '#0D47A1' : '#1976D2';
+                    const badgeColor = isFoarteUrgent ? '#1565C0' : '#2196F3';
+                    
+                    return `
+                        <div class="termen-item" style="border-left: 6px solid ${borderColor}; background: ${backgroundColor}; cursor: pointer;" onclick="alert('Detalii termen: ${dosar ? dosar.numar : 'N/A'}')">
+                            <div class="termen-data" style="color: ${textColor};">
+                                ⏰ ${formatDateTime(termen.dataOra)}
+                                <span class="badge-zile" style="background: ${badgeColor};">${daysUntil === 0 ? 'ASTĂZI' : daysUntil === 1 ? 'MÂINE' : `ÎN ${daysUntil} ZILE`}</span>
+                            </div>
+                            <div class="termen-detalii" style="margin-top: 10px;">
+                                <div style="font-weight: 700; color: ${textColor}; font-size: 17px; margin-bottom: 8px;">📁 Dosar: ${dosar ? dosar.numar : 'N/A'}</div>
+                                ${client ? `<div style="font-weight: 600; color: ${textColor}; font-size: 16px; margin-bottom: 6px;">👤 Client: ${client.nume}</div>` : (dosar?.client ? `<div style="font-weight: 600; color: ${textColor}; font-size: 16px; margin-bottom: 6px;">👤 Client: ${dosar.client}</div>` : '')}
+                                <div style="font-size: 15px; margin-bottom: 6px; color: ${textColor};"><strong>⚖️ Tip:</strong> ${termen.tip}</div>
+                                ${termen.notite ? `<div style="margin-top: 10px; padding: 12px; background: ${isFoarteUrgent ? '#90CAF9' : '#BBDEFB'}; border-radius: 8px; font-size: 14px; color: ${textColor};">${termen.notite}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function updateTermenDosarSelect() {
+            const select = document.getElementById('termenDosar');
+            const allDosare = [...dosare, ...dosareLucru];
+            select.innerHTML = '<option value="">Selectează dosar...</option>' + 
+                allDosare.map(d => `<option value="${d.id}">${d.numar}</option>`).join('');
+        }
+
+        function adaugaTermenDosar(dosarId) {
+            const dosar = [...dosare, ...dosareLucru].find(d => d.id === dosarId);
+            if (!dosar) return;
+            
+            const dataOra = prompt(`Adaugă termen pentru dosarul ${dosar.numar}\n\nIntrodu data și ora (format: DD-MM-YYYYTHH:MM):\nExemplu: 15-03-2026T10:30`);
+            if (!dataOra) return;
+            
+            // Convertește DD-MM-YYYYTHH:MM la YYYY-MM-DDTHH:MM pentru salvare
+            let dataConvertita = dataOra;
+            if (dataOra.includes('T')) {
+                const parts = dataOra.split('T');
+                const dateParts = parts[0].split('-');
+                if (dateParts.length === 3) {
+                    // DD-MM-YYYY → YYYY-MM-DD
+                    dataConvertita = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}T${parts[1]}`;
+                }
+            }
+            
+            const tip = prompt('Tip termen/ședință:') || 'Judecată';
+            const notite = prompt('Notițe (opțional):') || '';
+            
+            termene.push({
+                id: Date.now(),
+                dosarId: dosarId,
+                dataOra: dataConvertita,
+                tip: tip,
+                notite: notite
+            });
+            
+            saveData();
+            
+            // Actualizează TOATE randările
+            renderDosare();
+            renderDosareLucru();
+            renderTermene();  // ← IMPORTANT! Randează și secțiunea Termene
+            renderCalendar();
+            updateDashboard();  // ← Actualizează și termene urgente
+            
+            showAlert('✅ Termen adăugat pentru ' + dosar.numar, 'success');
+        }
+
+        function filterDosare() {
+            const search = document.getElementById('searchDosare').value.toLowerCase();
+            document.querySelectorAll('#dosareList .dosar-card').forEach(card => {
+                // Caută în: număr dosar, client, instanță, tip, obiect
+                const numarDosar = card.querySelector('.dosar-numar')?.textContent.toLowerCase() || '';
+                const allText = card.textContent.toLowerCase();
+                
+                const matches = numarDosar.includes(search) || allText.includes(search);
+                card.style.display = matches ? 'block' : 'none';
+            });
+        }
+
+        function filterDosareTerminate() {
+            const search = document.getElementById('searchDosareTerminate').value.toLowerCase();
+            document.querySelectorAll('#dosareTerminateList .dosar-card').forEach(card => {
+                // Caută în: număr dosar, client, instanță, tip, obiect
+                const numarDosar = card.querySelector('.dosar-numar')?.textContent.toLowerCase() || '';
+                const allText = card.textContent.toLowerCase();
+                
+                const matches = numarDosar.includes(search) || allText.includes(search);
+                card.style.display = matches ? 'block' : 'none';
+            });
+        }
+
+        function renderCalendar() {
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth();
+            const monthNames = ['Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie', 'Iulie', 'August', 'Septembrie', 'Octombrie', 'Noiembrie', 'Decembrie'];
+            
+            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            let html = '';
+            
+            ['L', 'M', 'M', 'J', 'V', 'S', 'D'].forEach(day => {
+                html += `<div class="calendar-day" style="font-weight: 700; border: none;">${day}</div>`;
+            });
+            
+            const startDay = firstDay === 0 ? 6 : firstDay - 1;
+            for (let i = 0; i < startDay; i++) {
+                html += '<div class="calendar-day" style="border: none;"></div>';
+            }
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                // FIX: Folosim format local pentru comparație, nu UTC
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayTermene = termene.filter(t => t.dataOra.startsWith(dateStr));
+                const dayTodos = todos.filter(t => t.dataLimita === dateStr && !t.completed);
+                const isToday = date.toDateString() === new Date().toDateString();
+                
+                let classes = 'calendar-day';
+                if (isToday) classes += ' today';
+                if (dayTermene.length > 0 || dayTodos.length > 0) classes += ' has-termen';
+                
+                html += `
+                    <div class="${classes}">
+                        <div>${day}</div>
+                        ${dayTermene.length > 0 ? `<div style="font-size: 10px; color: #2a5298;">📅 ${dayTermene.length}</div>` : ''}
+                        ${dayTodos.length > 0 ? `<div style="font-size: 10px; color: #dc3545;">✓ ${dayTodos.length}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = html;
+        }
+
+        function prevMonth() {
+            currentMonth.setMonth(currentMonth.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth.setMonth(currentMonth.getMonth() + 1);
+            renderCalendar();
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            const content = document.querySelector('.content');
+            content.insertBefore(alertDiv, content.firstChild);
+            
+            setTimeout(() => alertDiv.remove(), 3000);
+        }
+
+        // === TO-DO LIST FUNCTIONS ===
+
+        function showAddTodoForm() {
+            updateTodoDosarSelect();
+            document.getElementById('addTodoForm').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function hideAddTodoForm() {
+            document.getElementById('addTodoForm').style.display = 'none';
+            document.querySelector('#addTodoForm form').reset();
+        }
+
+        function updateTodoDosarSelect() {
+            const select = document.getElementById('todoDosarId');
+            const allDosare = [...dosare, ...dosareLucru];
+            select.innerHTML = '<option value="">Fără dosar asociat</option>' + 
+                allDosare.map(d => `<option value="${d.id}">${d.numar} - ${d.instanta}</option>`).join('');
+        }
+
+        function addTodo(e) {
+            e.preventDefault();
+            
+            const todo = {
+                id: Date.now(),
+                titlu: document.getElementById('todoTitlu').value,
+                descriere: document.getElementById('todoDescriere').value,
+                prioritate: document.getElementById('todoPrioritate').value,
+                dataLimita: document.getElementById('todoDataLimita').value || null,
+                dosarId: parseInt(document.getElementById('todoDosarId').value) || null,
+                completed: false,
+                dataCreare: new Date().toISOString()
+            };
+
+            todos.push(todo);
+            saveData();
+            hideAddTodoForm();
+            renderTodos();
+            showAlert('Task adăugat!', 'success');
+        }
+
+        function toggleTodoComplete(id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                saveData();
+                renderTodos();
+            }
+        }
+
+        function deleteTodo(id) {
+            if (confirm('Ștergi acest task?')) {
+                todos = todos.filter(t => t.id !== id);
+                saveData();
+                renderTodos();
+                showAlert('Task șters!', 'danger');
+            }
+        }
+
+        function filterTodoByPriority(priority) {
+            const allTodos = document.querySelectorAll('.todo-item');
+            allTodos.forEach(todo => {
+                if (priority === 'all') {
+                    todo.style.display = 'block';
+                } else {
+                    const todoPriority = todo.getAttribute('data-priority');
+                    todo.style.display = todoPriority === priority ? 'block' : 'none';
+                }
+            });
+        }
+
+        function renderTodos() {
+            const container = document.getElementById('todoList');
+            
+            if (todos.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>Nu ai task-uri</h3><p>Apasă + pentru a adăuga</p></div>';
+                return;
+            }
+
+            // Sortare: incomplete și prioritate
+            const sorted = [...todos].sort((a, b) => {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                const priorityOrder = { 'foarte-urgent': 0, 'urgent': 1, 'urmarit': 2 };
+                return priorityOrder[a.prioritate] - priorityOrder[b.prioritate];
+            });
+
+            container.innerHTML = sorted.map(todo => {
+                const allDosare = [...dosare, ...dosareLucru, ...dosareTerminate];
+                const dosar = allDosare.find(d => d.id === todo.dosarId);
+                
+                const priorityLabels = {
+                    'foarte-urgent': 'Foarte urgent',
+                    'urgent': 'Urgent',
+                    'urmarit': 'De urmărit'
+                };
+
+                return `
+                    <div class="todo-item ${todo.completed ? 'completed' : ''} priority-${todo.prioritate}" data-priority="${todo.prioritate}">
+                        <div style="display: flex; align-items: start; gap: 10px;">
+                            <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} 
+                                   onchange="toggleTodoComplete(${todo.id})">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+                                    <strong style="font-size: 14px; color: #2d3748;">${todo.titlu}</strong>
+                                    <span class="priority-badge-${todo.prioritate}">${priorityLabels[todo.prioritate]}</span>
+                                </div>
+                                ${todo.descriere ? `<div style="font-size: 12px; color: #5a6c7d; margin-bottom: 6px;">${todo.descriere}</div>` : ''}
+                                ${todo.dataLimita ? `<div style="font-size: 11px; color: #5a6c7d;">📅 Termen: ${formatDate(todo.dataLimita)}</div>` : ''}
+                                ${dosar ? `<div style="font-size: 11px; color: #5a6c7d;">📁 Dosar: ${dosar.numar}</div>` : ''}
+                                <div style="margin-top: 10px;">
+                                    <button class="btn btn-danger btn-small" onclick="deleteTodo(${todo.id})">Șterge</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // === DOSARE ÎN LUCRU FUNCTIONS ===
+
+        function mutaLaDosareLucru(id) {
+            if (confirm('Muți dosarul la "În lucru" (fără termen de judecată)?')) {
+                const index = dosare.findIndex(d => d.id === id);
+                if (index !== -1) {
+                    const dosar = dosare[index];
+                    dosareLucru.push(dosar);
+                    dosare.splice(index, 1);
+                    saveData();
+                    renderDosare();
+                    showAlert('Dosar mutat la "În lucru"!', 'success');
+                }
+            }
+        }
+
+        function mutaLaDosareActive(id) {
+            if (confirm('Muți dosarul înapoi la active?')) {
+                const index = dosareLucru.findIndex(d => d.id === id);
+                if (index !== -1) {
+                    const dosar = dosareLucru[index];
+                    
+                    // Verifică dacă e dosar UP (Urmărire Penală)
+                    if (dosar.fromUP || dosar.isUP) {
+                        // Reconvertește în UP
+                        const upDosar = {
+                            id: dosar.id,
+                            numar: dosar.numar,
+                            client: dosar.client,
+                            tipClient: dosar.tipClient || 'Suspect',
+                            obiect: dosar.obiect,
+                            parchet: dosar.instanta,
+                            procuror: dosar.procuror || '',
+                            politist: dosar.politist || '',
+                            contactAncheta: dosar.contactAncheta || '',
+                            dataAudiere: dosar.dataAudiere || '',
+                            notite: dosar.notiteDosar || '',
+                            dataAdaugare: dosar.dataAdaugare
+                        };
+                        dosareUP.push(upDosar);
+                        dosareLucru.splice(index, 1);
+                        saveData();
+                        renderDosareLucru();
+                        renderUPList();
+                        showAlert('✅ Dosar mutat înapoi la UP!', 'success');
+                    } else {
+                        // Dosar normal - merge la Dosare
+                        dosare.push(dosar);
+                        dosareLucru.splice(index, 1);
+                        saveData();
+                        renderDosareLucru();
+                        renderDosare();
+                        showAlert('✅ Dosar mutat la active!', 'success');
+                    }
+                }
+            }
+        }
+
+        function deleteDosarLucru(id) {
+            if (confirm('Ștergi dosarul definitiv?')) {
+                dosareLucru = dosareLucru.filter(d => d.id !== id);
+                todos = todos.filter(t => t.dosarId !== id);
+                saveData();
+                renderDosareLucru();
+                showAlert('Dosar șters!', 'danger');
+            }
+        }
+
+        function renderDosareLucru() {
+            const container = document.getElementById('dosareLucruList');
+            
+            if (dosareLucru.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>Nu ai dosare în lucru</h3><p>Dosarele fără termen de judecată vor apărea aici</p></div>';
+                return;
+            }
+
+            container.innerHTML = dosareLucru.map(dosar => {
+                const dosarTodos = todos.filter(t => t.dosarId === dosar.id);
+                return `
+                    <div class="dosar-card" style="border-left: 4px solid #ffc107;">
+                        <div class="dosar-numar">${dosar.numar}</div>
+                        <span class="badge badge-${dosar.tip}">${dosar.tip}</span>
+                        ${dosar.isUP || dosar.fromUP ? '<span class="badge" style="background: #f3e5f5; color: #6a1b9a;">UP</span>' : ''}
+                        <span class="badge" style="background: #fff3cd; color: #856404;">ÎN LUCRU</span>
+                        <div class="dosar-info"><strong>🏛️ Instanță:</strong> ${dosar.instanta}</div>
+                        ${dosar.client ? `<div class="dosar-info"><strong>👤 Client:</strong> ${dosar.client}</div>` : ''}
+                        ${dosar.obiect ? `<div class="dosar-info"><strong>📝 Obiect:</strong> ${dosar.obiect}</div>` : ''}
+                        ${dosar.linkEcris ? `<div class="dosar-info"><strong>🔗 Link:</strong> <a href="${dosar.linkEcris}" target="_blank">Portal</a></div>` : ''}
+                        <div class="dosar-info"><strong>📝 Task-uri:</strong> ${dosarTodos.length}</div>
+                        <div class="dosar-info"><strong>Adăugat:</strong> ${formatDate(dosar.dataAdaugare)}</div>
+                        <div class="dosar-actions">
+                            <button class="btn btn-primary btn-small" onclick="mutaLaDosareActive(${dosar.id})">→ ${dosar.isUP || dosar.fromUP ? 'Mută la UP' : 'Mută la active'}</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteDosarLucru(${dosar.id})">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterDosareLucru() {
+            const search = document.getElementById('searchDosareLucru').value.toLowerCase();
+            document.querySelectorAll('#dosareLucruList .dosar-card').forEach(card => {
+                // Caută în: număr dosar, client, instanță, tip, obiect
+                const numarDosar = card.querySelector('.dosar-numar')?.textContent.toLowerCase() || '';
+                const allText = card.textContent.toLowerCase();
+                
+                const matches = numarDosar.includes(search) || allText.includes(search);
+                card.style.display = matches ? 'block' : 'none';
+            });
+        }
+
+        // ==================== FUNCȚII CLIENȚI ====================
+        
+        function showAddClientForm() {
+            editingClientId = null;
+            document.getElementById('clientFormTitle').textContent = 'Client nou';
+            document.getElementById('addClientForm').style.display = 'block';
+            document.querySelector('#addClientForm form').reset();
+            window.scrollTo(0, 0);
+        }
+
+        function hideAddClientForm() {
+            editingClientId = null;
+            document.getElementById('addClientForm').style.display = 'none';
+            document.querySelector('#addClientForm form').reset();
+        }
+
+        function addClient(e) {
+            e.preventDefault();
+            
+            const clientData = {
+                nume: document.getElementById('numeClient').value,
+                cnp: document.getElementById('cnpClient').value,
+                contact: document.getElementById('contactClient').value,
+                adresa: document.getElementById('adresaClient').value,
+                onorariuPlatit: parseFloat(document.getElementById('onorariuPlatit').value) || 0,
+                onorariuRestant: parseFloat(document.getElementById('onorariuRestant').value) || 0
+            };
+
+            if (editingClientId) {
+                const index = clienti.findIndex(c => c.id === editingClientId);
+                if (index !== -1) {
+                    clienti[index] = { ...clienti[index], ...clientData };
+                    showAlert('✅ Client actualizat!', 'success');
+                }
+            } else {
+                const client = {
+                    id: Date.now(),
+                    ...clientData,
+                    dataAdaugare: new Date().toISOString()
+                };
+                clienti.push(client);
+                showAlert('✅ Client adăugat!', 'success');
+            }
+
+            saveData();
+            hideAddClientForm();
+            renderClientiList();
+        }
+
+        function editClient(id) {
+            const client = clienti.find(c => c.id === id);
+            if (!client) return;
+
+            editingClientId = id;
+            document.getElementById('numeClient').value = client.nume;
+            document.getElementById('cnpClient').value = client.cnp || '';
+            document.getElementById('contactClient').value = client.contact || '';
+            document.getElementById('adresaClient').value = client.adresa || '';
+            document.getElementById('onorariuPlatit').value = client.onorariuPlatit || 0;
+            document.getElementById('onorariuRestant').value = client.onorariuRestant || 0;
+            
+            document.getElementById('clientFormTitle').textContent = 'Editează client';
+            document.getElementById('addClientForm').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function deleteClient(id) {
+            const clientNume = clienti.find(c => c.id === id)?.nume;
+            const dosareClient = dosare.filter(d => d.client === clientNume);
+            const dosareUPClient = dosareUP.filter(d => d.client === clientNume);
+            const dosareLucruClient = dosareLucru.filter(d => d.client === clientNume);
+            const dosareTerminateClient = dosareTerminate.filter(d => d.client === clientNume);
+            
+            const totalDosare = dosareClient.length + dosareUPClient.length + dosareLucruClient.length + dosareTerminateClient.length;
+            
+            if (totalDosare > 0) {
+                if (!confirm(`⚠️ Acest client are ${totalDosare} dosare asociate (${dosareUPClient.length} UP, ${dosareClient.length} normale). Sigur vrei să-l ștergi?`)) {
+                    return;
+                }
+            }
+            
+            if (confirm('Ștergi definitiv acest client?')) {
+                clienti = clienti.filter(c => c.id !== id);
+                saveData();
+                renderClientiList();
+                showAlert('🗑️ Client șters!', 'danger');
+            }
+        }
+
+        function renderClientiList() {
+            const container = document.getElementById('clientiList');
+            
+            if (clienti.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3 style="color: #6c757d;">Nu ai clienți adăugați</h3><p style="color: #6c757d;">Apasă "+" pentru a adăuga primul client</p></div>';
+                return;
+            }
+
+            container.innerHTML = clienti.map(client => {
+                // Comparație case-insensitive și trim pentru spații
+                const clientNume = (client.nume || '').trim().toLowerCase();
+                
+                // Include TOATE dosarele: normale + UP + în lucru + terminate
+                const dosareNormale = dosare.filter(d => (d.client || '').trim().toLowerCase() === clientNume);
+                const dosareUPClient = dosareUP.filter(d => (d.client || '').trim().toLowerCase() === clientNume);
+                const dosareLucruClient = dosareLucru.filter(d => (d.client || '').trim().toLowerCase() === clientNume);
+                const dosareTerminateClient = dosareTerminate.filter(d => (d.client || '').trim().toLowerCase() === clientNume);
+                
+                const totalDosare = dosareNormale.length + dosareUPClient.length + dosareLucruClient.length + dosareTerminateClient.length;
+                const totalOnorariu = client.onorariuPlatit + client.onorariuRestant;
+                
+                return `
+                    <div class="dosar-card" style="border-left: 4px solid #28a745;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                            <div>
+                                <div class="dosar-numar">${client.nume}</div>
+                                ${client.cnp ? `<div style="font-size: 12px; color: #6c757d; margin-top: 4px;">CNP: ${client.cnp}</div>` : ''}
+                            </div>
+                            <div class="dosar-actions">
+                                <button class="btn btn-primary btn-small" onclick="editClient(${client.id})">✏️</button>
+                                <button class="btn btn-danger btn-small" onclick="deleteClient(${client.id})">🗑️</button>
+                            </div>
+                        </div>
+                        
+                        ${client.contact ? `<div class="dosar-info"><strong>📞 Contact:</strong> ${client.contact}</div>` : ''}
+                        ${client.adresa ? `<div class="dosar-info"><strong>📍 Adresă:</strong> ${client.adresa}</div>` : ''}
+                        
+                        <div class="dosar-info"><strong>📁 Dosare asociate:</strong> ${totalDosare}</div>
+                        
+                        ${totalDosare > 0 ? `
+                            <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                                <strong style="font-size: 12px; color: #495057;">Dosare:</strong>
+                                <div style="margin-top: 6px;">
+                                    ${dosareUPClient.map(d => `
+                                        <span class="badge" style="background: #2196F3; color: white; margin: 2px; cursor: pointer;" title="UP - ${d.numar}">
+                                            ${d.numar}
+                                        </span>
+                                    `).join('')}
+                                    ${dosareNormale.map(d => `
+                                        <span class="badge badge-${d.tip}" style="margin: 2px; cursor: pointer;" title="${d.tip} - ${d.numar}">
+                                            ${d.numar}
+                                        </span>
+                                    `).join('')}
+                                    ${dosareLucruClient.map(d => `
+                                        <span class="badge" style="background: ${d.isUP || d.fromUP ? '#2196F3' : '#ffc107'}; color: ${d.isUP || d.fromUP ? 'white' : '#000'}; margin: 2px; cursor: pointer;" title="${d.isUP || d.fromUP ? 'UP' : d.tip} - În lucru">
+                                            ${d.numar}
+                                        </span>
+                                    `).join('')}
+                                    ${dosareTerminateClient.map(d => `
+                                        <span class="badge" style="background: ${d.isUP || d.fromUP ? '#2196F3' : '#6c757d'}; color: white; margin: 2px; cursor: pointer; opacity: 0.7;" title="${d.isUP || d.fromUP ? 'UP' : d.tip} - Terminat">
+                                            ${d.numar}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f8f9fa;">
+                            <div style="padding: 10px; border-radius: 8px; text-align: center; background: #d4edda; color: #155724;">
+                                <div style="font-size: 11px; margin-bottom: 4px;">Plătit</div>
+                                <div style="font-weight: 700; font-size: 16px;">${formatMoney(client.onorariuPlatit)}</div>
+                            </div>
+                            <div style="padding: 10px; border-radius: 8px; text-align: center; background: #f8d7da; color: #721c24;">
+                                <div style="font-size: 11px; margin-bottom: 4px;">Restant</div>
+                                <div style="font-weight: 700; font-size: 16px;">${formatMoney(client.onorariuRestant)}</div>
+                            </div>
+                        </div>
+                        
+                        ${totalOnorariu > 0 ? `
+                            <div style="margin-top: 10px; padding: 8px; background: #e7f3ff; border-radius: 6px; text-align: center; font-size: 12px;">
+                                <strong>Total onorariu:</strong> ${formatMoney(totalOnorariu)}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterClienti() {
+            const search = document.getElementById('searchClienti').value.toLowerCase();
+            const cards = document.querySelectorAll('#clientiList .dosar-card');
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(search) ? 'block' : 'none';
+            });
+        }
+
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('ro-RO', { style: 'currency', currency: 'RON' }).format(amount || 0);
+        }
+
+        // ==================== FIȘA DOSARULUI COMPLETĂ ====================
+        
+        function viewFisaDosar(dosarId) {
+            const dosar = [...dosare, ...dosareLucru, ...dosareTerminate].find(d => d.id === dosarId);
+            if (!dosar) return;
+            
+            const termeneDosar = termene.filter(t => t.dosarId === dosarId);
+            const now = new Date();
+            const termeneViitoare = termeneDosar.filter(t => new Date(t.dataOra) > now).sort((a,b) => new Date(a.dataOra) - new Date(b.dataOra));
+            const termeneVechi = termeneDosar.filter(t => new Date(t.dataOra) <= now).sort((a,b) => new Date(b.dataOra) - new Date(a.dataOra));
+            
+            if (!dosar.sedinte) dosar.sedinte = [];
+            if (!dosar.sarcini) dosar.sarcini = [];
+            
+            const fisaContent = `
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #2d3748; font-size: 24px; margin-bottom: 15px;">📁 ${dosar.numar}</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div><strong>🏛️ Instanță:</strong> ${dosar.instanta}</div>
+                        <div><strong>⚖️ Tip:</strong> <span class="badge badge-${dosar.tip}">${dosar.tip}</span></div>
+                        ${dosar.client ? `<div><strong>👤 Client:</strong> ${dosar.client}</div>` : ''}
+                        <div><strong>📊 Stadiu:</strong> ${dosar.stadiuProcesual || 'Fond'}</div>
+                        <div><strong>🔄 Cale atac:</strong> ${dosar.caleAtac || 'Niciuna'}</div>
+                    </div>
+                    ${dosar.obiect ? `<div style="margin-top: 10px;"><strong>📝 Obiect:</strong><br>${dosar.obiect}</div>` : ''}
+                    ${dosar.notiteDosar ? `<div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #6c757d;"><strong>📋 Notițe:</strong><br>${dosar.notiteDosar}</div>` : ''}
+                </div>
+                <hr style="border: none; border-top: 2px solid #e9ecef; margin: 25px 0;">
+                <div style="margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="color: #1976D2; margin: 0;">📅 Termene/Ședințe viitoare (${termeneViitoare.length})</h4>
+                        <button class="btn btn-primary btn-small" onclick="adaugaTermenDosar(${dosarId}); closeFisaModal();">+ Termen/Ședință</button>
+                    </div>
+                    ${termeneViitoare.length > 0 ? termeneViitoare.map(t => `<div style="padding: 12px; background: #E3F2FD; margin: 8px 0; border-radius: 6px; border-left: 4px solid #2196F3;"><div style="color: #0D47A1; font-weight: 600;">${formatDateTime(t.dataOra)}</div><div style="color: #1976D2; font-size: 14px;">${t.tip}</div>${t.notite ? `<div style="margin-top: 6px; font-size: 13px; color: #546E7A;">${t.notite}</div>` : ''}</div>`).join('') : '<p style="color: #6c757d; font-style: italic;">Nu are termene/ședințe viitoare</p>'}
+                </div>
+                <div style="margin-bottom: 25px;">
+                    <h4 style="color: #6c757d; margin-bottom: 12px;">📜 Istoric termene/ședințe (${termeneVechi.length})</h4>
+                    ${termeneVechi.length > 0 ? termeneVechi.slice(0, 10).map(t => `<div style="padding: 10px; background: #f8f9fa; margin: 6px 0; border-radius: 6px; font-size: 13px;"><div style="color: #495057; font-weight: 600;">${formatDateTime(t.dataOra)}</div><div style="color: #6c757d;">${t.tip}</div></div>`).join('') : '<p style="color: #6c757d; font-style: italic;">Nu are termene/ședințe vechi</p>'}
+                    ${termeneVechi.length > 10 ? `<p style="font-size: 12px; color: #6c757d;">... și încă ${termeneVechi.length - 10}</p>` : ''}
+                </div>
+                <hr style="border: none; border-top: 2px solid #e9ecef; margin: 25px 0;">
+                <div style="margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="color: #2d3748; margin: 0;">✅ Sarcini (${dosar.sarcini.filter(s => !s.finalizata).length} active)</h4>
+                        <button class="btn btn-primary btn-small" onclick="adaugaSarcina(${dosarId})">+ Sarcină</button>
+                    </div>
+                    ${dosar.sarcini.length > 0 ? dosar.sarcini.sort((a,b) => a.finalizata - b.finalizata).map((s, idx) => `<div style="padding: 12px; background: ${s.finalizata ? '#d4edda' : '#fff3cd'}; margin: 8px 0; border-radius: 6px; border-left: 4px solid ${s.finalizata ? '#28a745' : '#ffc107'}; position: relative;"><button onclick="stergeSarcina(${dosarId}, ${idx})" style="position: absolute; top: 8px; right: 8px; background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;">🗑️</button><div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" ${s.finalizata ? 'checked' : ''} onchange="toggleSarcina(${dosarId}, ${idx})" style="width: 18px; height: 18px; cursor: pointer;"><div style="flex: 1; ${s.finalizata ? 'text-decoration: line-through; color: #6c757d;' : 'color: #2d3748;'}">${s.descriere}</div></div>${s.termen ? `<div style="font-size: 12px; color: #6c757d; margin-top: 6px; margin-left: 28px;">📅 ${formatDate(s.termen)}</div>` : ''}</div>`).join('') : '<p style="color: #6c757d; font-style: italic;">Nu sunt sarcini</p>'}
+                </div>
+            `;
+            
+            document.getElementById('fisaContent').innerHTML = fisaContent;
+            document.getElementById('fisaModal').style.display = 'block';
+        }
+
+        function closeFisaModal() {
+            document.getElementById('fisaModal').style.display = 'none';
+        }
+
+        function adaugaSedinta(dosarId) {
+            closeFisaModal();
+            const dosar = dosare.find(d => d.id === dosarId) || dosareLucru.find(d => d.id === dosarId);
+            if (!dosar) return;
+            const data = prompt(`Ședință pentru ${dosar.numar}\n\nData (YYYY-MM-DD):`);
+            if (!data) return;
+            const detalii = prompt('Detalii:') || 'Ședință de judecată';
+            if (!dosar.sedinte) dosar.sedinte = [];
+            dosar.sedinte.push({data: data, detalii: detalii, timestamp: new Date().toISOString()});
+            saveData();
+            renderDosare();
+            renderDosareLucru();
+            showAlert('✅ Ședință adăugată!', 'success');
+            setTimeout(() => viewFisaDosar(dosarId), 300);
+        }
+
+        function stergeSedinta(dosarId, index) {
+            if (!confirm('Ștergi?')) return;
+            const dosar = dosare.find(d => d.id === dosarId) || dosareLucru.find(d => d.id === dosarId);
+            if (!dosar) return;
+            dosar.sedinte.splice(index, 1);
+            saveData();
+            viewFisaDosar(dosarId);
+            showAlert('🗑️ Șters!', 'danger');
+        }
+
+        function adaugaSarcina(dosarId) {
+            closeFisaModal();
+            const dosar = dosare.find(d => d.id === dosarId) || dosareLucru.find(d => d.id === dosarId);
+            if (!dosar) return;
+            const descriere = prompt(`Sarcină pentru ${dosar.numar}\n\nDescriere:`);
+            if (!descriere) return;
+            const termen = prompt('Termen (YYYY-MM-DD - opțional):') || '';
+            if (!dosar.sarcini) dosar.sarcini = [];
+            dosar.sarcini.push({descriere: descriere, termen: termen, finalizata: false, timestamp: new Date().toISOString()});
+            saveData();
+            renderDosare();
+            renderDosareLucru();
+            showAlert('✅ Sarcină adăugată!', 'success');
+            setTimeout(() => viewFisaDosar(dosarId), 300);
+        }
+
+        function stergeSarcina(dosarId, index) {
+            if (!confirm('Ștergi?')) return;
+            const dosar = dosare.find(d => d.id === dosarId) || dosareLucru.find(d => d.id === dosarId);
+            if (!dosar) return;
+            dosar.sarcini.splice(index, 1);
+            saveData();
+            viewFisaDosar(dosarId);
+            showAlert('🗑️ Șters!', 'danger');
+        }
+
+        function toggleSarcina(dosarId, index) {
+            const dosar = dosare.find(d => d.id === dosarId) || dosareLucru.find(d => d.id === dosarId);
+            if (!dosar) return;
+            dosar.sarcini[index].finalizata = !dosar.sarcini[index].finalizata;
+            saveData();
+            viewFisaDosar(dosarId);
+        }
+
+        // ==================== FUNCȚII UP (URMĂRIRE PENALĂ) ====================
+        
+        function showAddUPForm() {
+            editingUPId = null;
+            document.getElementById('upFormTitle').textContent = 'Dosar UP nou';
+            document.getElementById('addUPForm').style.display = 'block';
+            document.querySelector('#addUPForm form').reset();
+            window.scrollTo(0, 0);
+        }
+
+        function hideAddUPForm() {
+            editingUPId = null;
+            document.getElementById('addUPForm').style.display = 'none';
+            document.querySelector('#addUPForm form').reset();
+        }
+
+        function addUP(e) {
+            e.preventDefault();
+            
+            const upData = {
+                numar: document.getElementById('numarUP').value,
+                client: document.getElementById('clientUP').value,
+                tipClient: document.getElementById('tipClientUP').value,
+                obiect: document.getElementById('obiectUP').value,
+                parchet: document.getElementById('parchetUP').value,
+                procuror: document.getElementById('procurorUP').value,
+                politist: document.getElementById('politistUP').value,
+                contactAncheta: document.getElementById('contactAnchetaUP').value,
+                dataAudiere: document.getElementById('dataAudiereUP').value,
+                notite: document.getElementById('notiteUP').value
+            };
+
+            if (editingUPId) {
+                const index = dosareUP.findIndex(d => d.id === editingUPId);
+                if (index !== -1) {
+                    dosareUP[index] = { ...dosareUP[index], ...upData };
+                    showAlert('✅ Dosar UP actualizat!', 'success');
+                }
+            } else {
+                const dosar = {
+                    id: Date.now(),
+                    ...upData,
+                    dataAdaugare: new Date().toISOString()
+                };
+                dosareUP.push(dosar);
+                showAlert('✅ Dosar UP adăugat!', 'success');
+            }
+
+            saveData();
+            hideAddUPForm();
+            renderUPList();
+            renderClientiList();  // ✨ Actualizează lista clienți cu dosarele UP
+            
+            // Dacă are dată audiere, actualizează calendarul
+            if (upData.dataAudiere) {
+                renderCalendar();
+            }
+        }
+
+        function editUP(id) {
+            const dosar = dosareUP.find(d => d.id === id);
+            if (!dosar) return;
+
+            editingUPId = id;
+            document.getElementById('numarUP').value = dosar.numar;
+            document.getElementById('clientUP').value = dosar.client || '';
+            document.getElementById('tipClientUP').value = dosar.tipClient || '';
+            document.getElementById('obiectUP').value = dosar.obiect || '';
+            document.getElementById('parchetUP').value = dosar.parchet || '';
+            document.getElementById('procurorUP').value = dosar.procuror || '';
+            document.getElementById('politistUP').value = dosar.politist || '';
+            document.getElementById('contactAnchetaUP').value = dosar.contactAncheta || '';
+            document.getElementById('dataAudiereUP').value = dosar.dataAudiere || '';
+            document.getElementById('notiteUP').value = dosar.notite || '';
+            
+            document.getElementById('upFormTitle').textContent = 'Editează dosar UP';
+            document.getElementById('addUPForm').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function deleteUP(id) {
+            if (confirm('Ștergi definitiv acest dosar UP?')) {
+                dosareUP = dosareUP.filter(d => d.id !== id);
+                saveData();
+                renderUPList();
+                renderClientiList();  // ✨ Actualizează lista clienți
+                showAlert('🗑️ Dosar UP șters!', 'danger');
+            }
+        }
+
+        function mutaUPInLucru(id) {
+            if (confirm('Muți dosarul UP în lucru?')) {
+                const index = dosareUP.findIndex(d => d.id === id);
+                if (index !== -1) {
+                    const upDosar = dosareUP[index];
+                    const dosarNou = {
+                        id: upDosar.id,
+                        numar: upDosar.numar,
+                        client: upDosar.client,
+                        instanta: upDosar.parchet,
+                        tip: 'penal',
+                        obiect: upDosar.obiect,
+                        linkEcris: '',
+                        fromUP: true,  // MARCHEAZĂ că vine din UP
+                        isUP: true,    // E dosar UP
+                        tipClient: upDosar.tipClient,
+                        procuror: upDosar.procuror,
+                        politist: upDosar.politist,
+                        contactAncheta: upDosar.contactAncheta,
+                        dataAudiere: upDosar.dataAudiere,
+                        notiteDosar: upDosar.notite,
+                        stadiuProcesual: 'Urmărire Penală',
+                        caleAtac: 'Niciuna',
+                        sedinte: [],
+                        sarcini: [],
+                        dataAdaugare: upDosar.dataAdaugare || new Date().toISOString()
+                    };
+                    dosareLucru.push(dosarNou);
+                    dosareUP.splice(index, 1);
+                    saveData();
+                    renderUPList();
+                    renderDosareLucru();
+                    renderClientiList();  // ✨ Actualizează lista clienți
+                    showAlert('✅ Dosar UP mutat în lucru!', 'success');
+                }
+            }
+        }
+
+        function terminaUP(id) {
+            if (confirm('Muți dosarul UP la terminate?')) {
+                const index = dosareUP.findIndex(d => d.id === id);
+                if (index !== -1) {
+                    const upDosar = dosareUP[index];
+                    const dosarNou = {
+                        id: upDosar.id,
+                        numar: upDosar.numar,
+                        client: upDosar.client,
+                        instanta: upDosar.parchet,
+                        tip: 'penal',
+                        obiect: upDosar.obiect,
+                        fromUP: true,  // MARCHEAZĂ că vine din UP
+                        isUP: true,    // E dosar UP
+                        tipClient: upDosar.tipClient,
+                        procuror: upDosar.procuror,
+                        politist: upDosar.politist,
+                        contactAncheta: upDosar.contactAncheta,
+                        dataAudiere: upDosar.dataAudiere,
+                        notiteDosar: upDosar.notite,
+                        dataTerminare: new Date().toISOString()
+                    };
+                    dosareTerminate.push(dosarNou);
+                    dosareUP.splice(index, 1);
+                    saveData();
+                    renderUPList();
+                    renderDosareTerminate();
+                    renderClientiList();  // ✨ Actualizează lista clienți
+                    showAlert('✅ Dosar UP terminat!', 'success');
+                }
+            }
+        }
+
+        function renderUPList() {
+            const container = document.getElementById('upList');
+            
+            if (dosareUP.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3 style="color: #6c757d;">Nu ai dosare UP</h3><p style="color: #6c757d;">Apasă "+" pentru a adăuga primul dosar de urmărire penală</p></div>';
+                return;
+            }
+
+            container.innerHTML = dosareUP.map(dosar => {
+                return `
+                    <div class="dosar-card" style="border-left: 4px solid #6a1b9a;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                            <div>
+                                <div class="dosar-numar">${dosar.numar}</div>
+                                <span class="badge" style="background: #f3e5f5; color: #6a1b9a;">UP</span>
+                            </div>
+                            <div class="dosar-actions">
+                                <button class="btn btn-primary btn-small" onclick="editUP(${dosar.id})">✏️</button>
+                                <button class="btn btn-warning btn-small" onclick="mutaUPInLucru(${dosar.id})" title="Mută în lucru">⚙️</button>
+                                <button class="btn btn-success btn-small" onclick="terminaUP(${dosar.id})" title="Termină">✅</button>
+                                <button class="btn btn-danger btn-small" onclick="deleteUP(${dosar.id})">🗑️</button>
+                            </div>
+                        </div>
+                        
+                        <div class="dosar-info"><strong>👤 Client:</strong> ${dosar.client}</div>
+                        <div class="dosar-info"><strong>Tip client:</strong> <span style="color: ${dosar.tipClient === 'Suspect' || dosar.tipClient === 'Inculpat' ? '#dc3545' : '#28a745'}; font-weight: 600;">${dosar.tipClient}</span></div>
+                        ${dosar.obiect ? `<div class="dosar-info"><strong>⚖️ Obiect:</strong> ${dosar.obiect}</div>` : ''}
+                        <div class="dosar-info"><strong>🏛️ Parchet:</strong> ${dosar.parchet}</div>
+                        ${dosar.procuror ? `<div class="dosar-info"><strong>👨‍⚖️ Procuror:</strong> ${dosar.procuror}</div>` : ''}
+                        ${dosar.politist ? `<div class="dosar-info"><strong>👮 Polițist:</strong> ${dosar.politist}</div>` : ''}
+                        ${dosar.contactAncheta ? `<div class="dosar-info"><strong>📞 Contact anchetă:</strong> ${dosar.contactAncheta}</div>` : ''}
+                        ${dosar.dataAudiere ? `
+                            <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 6px; border-left: 3px solid #ffc107;">
+                                <strong style="color: #856404;">📅 Data audiere:</strong> ${formatDate(dosar.dataAudiere)}
+                            </div>
+                        ` : ''}
+                        ${dosar.notite ? `
+                            <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; font-size: 13px;">
+                                <strong style="display: block; margin-bottom: 4px; color: #495057;">📝 Notițe:</strong>
+                                ${dosar.notite}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterUP() {
+            const search = document.getElementById('searchUP').value.toLowerCase();
+            const cards = document.querySelectorAll('#upList .dosar-card');
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(search) ? 'block' : 'none';
+            });
+        }
+
+        window.onload = function() {
+            initializeApp();
+        };
+
+        // Backup pentru mobile - DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        // Funcție centralizată de inițializare
+        let appInitialized = false;
+        function initializeApp() {
+            if (appInitialized) {
+                return;
+            }
+            appInitialized = true;
+            
+            loadData();
+            
+            renderDosare();
+            renderDosareTerminate();
+            renderDosareLucru();
+            renderTermene();
+            renderTodos();
+            renderClientiList();
+            renderUPList();
+            updateDashboard();
+        }
+    </script>
+</body>
+</html>
